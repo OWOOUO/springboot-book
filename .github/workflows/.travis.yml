@@ -1,0 +1,38 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.naver.com
+          server_port: 465
+          username: "ggwogns@naver.com"
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "GitHub Actions Build Failed"
+          body: "Check the logs for details."
+          to: "ggwogns@naver.com"
+          from: "GitHub Actions"

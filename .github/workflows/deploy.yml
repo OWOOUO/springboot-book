@@ -1,4 +1,4 @@
-name: Java CI with Gradle and S3 Deploy
+name: Java CI with Gradle and AWS CodeDeploy
 
 on:
   push:
@@ -22,16 +22,16 @@ jobs:
           java-version: '17'
 
       - name: Grant execute permission for Gradlew
-        run: chmod +x ./gradlew  # 실행 권한 추가
+        run: chmod +x ./gradlew
 
       - name: Build with Gradle (Skip Tests)
-        run: ./gradlew build  -x test
+        run: ./gradlew build -x test
 
       - name: Create Deployment Directory
         run: mkdir -p deploy
 
-      - name: Zip Project Files
-        run: zip -r freelec-springboot2-webservice.zip ./*
+      - name: Zip Project Files (Include appspec.yml)
+        run: zip -r freelec-springboot2-webservice.zip ./ -x "*.git*" ".github/*"
 
       - name: Move Zip to Deploy Directory
         run: mv freelec-springboot2-webservice.zip deploy/freelec-springboot2-webservice.zip
@@ -45,3 +45,22 @@ jobs:
 
       - name: Upload to S3
         run: aws s3 cp deploy/freelec-springboot2-webservice.zip s3://freelec-springboot-book --acl private
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy to AWS CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name freelec-springboot2-webservice \
+            --deployment-group-name freelec-springboot2-webservice-group \
+            --s3-location bucket=freelec-springboot-book,key=freelec-springboot2-webservice.zip,bundleType=zip \
+            --region ap-northeast-2

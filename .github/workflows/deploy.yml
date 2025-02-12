@@ -27,14 +27,20 @@ jobs:
       - name: Build with Gradle (Skip Tests)
         run: ./gradlew build -x test
 
-      - name: Create Deployment Directory
-        run: mkdir -p deploy
+      - name: Create Deployment Directory (before-deploy)
+        run: mkdir -p before-deploy
 
-      - name: Zip Project Files (Include appspec.yml)
-        run: zip -r freelec-springboot2-webservice.zip ./ -x "*.git*" ".github/*"
+      - name: Copy Deployment Files
+        run: |
+          cp scripts/*.sh before-deploy/  # 실행 스크립트 복사
+          cp appspec.yml before-deploy/  # AWS CodeDeploy 설정 파일 복사
+          cp build/libs/*.jar before-deploy/  # Gradle 빌드된 JAR 파일 복사
 
-      - name: Move Zip to Deploy Directory
-        run: mv freelec-springboot2-webservice.zip deploy/freelec-springboot2-webservice.zip
+      - name: Zip Deployment Package
+        run: |
+          cd before-deploy && zip -r before-deploy.zip *  # ZIP 생성
+          cd ../ && mkdir -p deploy  # deploy 폴더 생성
+          mv before-deploy/before-deploy.zip deploy/freelec-springboot2-webservice.zip  # ZIP 이동
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2

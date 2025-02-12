@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Java CI with Gradle and S3 Deploy
 
 on:
   push:
@@ -24,15 +24,21 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      - name: Send email on failure
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
+      - name: Create Deployment Directory
+        run: mkdir -p deploy
+
+      - name: Zip Project Files
+        run: zip -r freelec-springboot2-webservice.zip ./*
+
+      - name: Move Zip to Deploy Directory
+        run: mv freelec-springboot2-webservice.zip deploy/freelec-springboot2-webservice.zip
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          server_address: smtp.naver.com
-          server_port: 465
-          username: "ggwogns@naver.com"
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "GitHub Actions Build Failed"
-          body: "Check the logs for details."
-          to: "ggwogns@naver.com"
-          from: "GitHub Actions"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: aws s3 cp deploy/freelec-springboot2-webservice.zip s3://freelec-springboot-build --acl private

@@ -61,6 +61,6 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name freelec-springboot-webservice \
-            --deployment-group-name freelec-springboot2-webservice-group \
+            --deployment-group-name freelec-springboot-webservice-group \
             --s3-location bucket=freelec-springboot-book,key=freelec-springboot2-webservice.zip,bundleType=zip \
             --region ap-northeast-2

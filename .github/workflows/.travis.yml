@@ -41,4 +41,4 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp deploy/freelec-springboot2-webservice.zip s3://freelec-springboot-build --acl private
+        run: aws s3 cp deploy/freelec-springboot2-webservice.zip s3://freelec-springboot-book --acl private

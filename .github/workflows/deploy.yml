@@ -60,7 +60,7 @@ jobs:
       - name: Deploy to AWS CodeDeploy
         run: |
           aws deploy create-deployment \
-            --application-name freelec-springboot2-webservice \
+            --application-name freelec-springboot-webservice \
             --deployment-group-name freelec-springboot2-webservice-group \
             --s3-location bucket=freelec-springboot-book,key=freelec-springboot2-webservice.zip,bundleType=zip \
             --region ap-northeast-2
